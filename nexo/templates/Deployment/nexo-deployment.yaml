@@ -1,0 +1,42 @@
+{{- if .Values.Nexo.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexo
+  labels:
+    app: nexo
+spec:
+  selector:
+    matchLabels:
+      app: nexo
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nexo
+        tier: frontend
+    spec:
+      containers:
+      - image: "{{ .Values.Nexo.image }}:{{ .Values.Nexo.tag }}"
+        name: nexo
+        env:
+        - name: NEXO_DB_HOST
+          value: nexo-mysql
+        - name: NEXO_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        ports:
+        - containerPort: 80
+          name: nexo
+        volumeMounts:
+        - name: nexo-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: nexo-persistent-storage
+        persistentVolumeClaim:
+          claimName: wp-pv-claim
+{{- end }}

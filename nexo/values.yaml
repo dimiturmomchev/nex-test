@@ -1,0 +1,28 @@
+# Default values for nexo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+Nexo:
+  enabled: true
+  image: docker-hello-world:latest
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+
+MySql:
+  enabled: true
+  repository: mysql
+  tag: 5.6
+
+MySql_Secret:
+  enabled: true
+  password: test1234
+
+MySql_storage:
+  enabled: true
+  storage_size : 20Gi
+
+Nexo_storage:
+  enabled: true
+  storage_size : 20Gi

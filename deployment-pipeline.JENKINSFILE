@@ -1,0 +1,95 @@
+def send_email (Map config){
+    def name = config.recepient
+    def context = config.message
+    try{
+        echo "Sending email to ${name}. ${context}"
+    }catch(error){
+        currentBuild.result = "UNSTABLE"
+        println "Function 'send_email' Broke for some reason."
+        println "ERROR: ${error}"
+    }
+}
+
+def git_clone (Map config){
+    def repository = config.repo_url
+
+    echo "-= Attempting to checkout ${repository}=-"
+
+    def cmd = """git clone ${repository}"""
+    if(isUnix()){
+        echo "CURRENT SYSTEM IS LINUX"
+        ls """${cmd}"""
+    }else{
+        echo "CURRENT SYSTEM IS WINDOWS"
+        bat """${cmd}"""
+    }
+
+}
+
+pipeline{
+
+    agent any
+
+    options {
+        timeout(time: 12, unit: 'HOURS') 
+    }
+
+    stages{
+        stage("CheckOut"){
+            steps{
+                dir("application-hello"){
+                    script{
+                        deleteDir()
+                        git_clone(repo_url: "https://github.com/dimiturmomchev/nex-test.git")
+                        echo "${params.IMAGE_NAME}"
+                        echo "${params.IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+        stage("Helm - Deployment"){
+            steps{
+                dir("application-hello"){
+                    script{
+                        def helm_lint_check = bat(returnStdout: true, script: "helm lint nexo").trim()
+                        bat "cd nex-test"
+
+                        if (helm_lint_check == true ){
+                            bat """helm install nexo-test-1 nexo"""
+                        }else{
+                            echo "ERROR: Lint Error - Syntax check!"
+                            echo "exit 1"
+                        }
+                        
+                    }
+                }
+            }
+        }
+        stage("DeleteDir"){
+            steps{
+                script{
+                    echo "DeleteDir"
+                    deleteDir()
+                }
+            }
+        }
+    }
+
+    post{
+        failure{
+            send_email(
+                recepient: "dimitar",
+                message: "Failed build "
+            )
+        }
+        success{
+            send_email(
+                recepient: "dimitar",
+                message: "Successfull build "
+            )
+
+        }
+
+    }
+
+}

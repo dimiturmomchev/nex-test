@@ -135,10 +135,12 @@ pipeline{
                 dir("nex-test"){
                     script{
                         
+                        
                         echo "-= Attempting to Run Docker Compose =-"
-                        // bat "cd ./nex-test"
+                        // bat "cd nex-test"
                         bat "dir"
-                        bat "docker compose up"
+                        bat "docker-compose --version"
+                        // bat "docker compose up "
                         // def cmd = """docker compose up"""
                         // if(isUnix()){
                         //     echo "CURRENT SYSTEM IS LINUX"
@@ -147,6 +149,17 @@ pipeline{
                         //     echo "CURRENT SYSTEM IS WINDOWS"
                         //     bat """${cmd}"""
                         // }
+                    }
+                }
+            }
+        }
+        stage("Helm"){
+            steps{
+                dir("application-hello"){
+                    script{
+                        def paramAValue = "${params.IMAGE_NAME}"
+                        def paramBValue = "${params.IMAGE_TAG}"
+                        build job: 'deployment-pipeline', parameters: [[$class: 'StringParameterValue', name: 'IMAGE_NAME', value: paramAValue], [$class: 'StringParameterValue', name: 'IMAGE_TAG', value: paramBValue]]
                     }
                 }
             }

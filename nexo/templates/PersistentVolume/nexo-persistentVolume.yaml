@@ -1,0 +1,14 @@
+{{- if .Values.Nexo_storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-pv-claim
+  labels:
+    app: nexo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.Nexo_storage.storage_size }}
+{{- end }}
