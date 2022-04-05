@@ -1,5 +1,40 @@
 
 
+def createStages() {
+  stage_map = [:]
+  stage_map.put('test-profile-Coca-Cola', {echo '-= test1=-'})
+  stage_map.put('test-profile-Pepsi', {echo '-= test2=-'})
+  stage_map.put('test-profile-Sprite', {echo '-= test3=-'})
+  stage_map.put('test-profile-Fanta', {echo '-= test4=-'})
+  stage_map.put('test-profile-Schweppes', {echo '-= test5=-'})
+  return stage_map
+}
+
+def git_clone (Map config){
+    def repository = config.repo_url
+
+    echo "-= Attempting to checkout ${repository}=-"
+    bat "git clone ${repository}"
+}
+
+def docker_build(Map config){
+    def name_of_image = config.image_name
+    def tag_of_image = config.tag_name
+    def dir = config.build_dir
+
+    echo "-= Attempting to Build Docker Image ${name_of_image} =-"
+    bat """cd ${dir} && docker build --tag "${name_of_image}:${tag_of_image}" . """
+}
+
+def docker_run(Map config){
+    def name_of_image = config.image_name
+    def tag_of_image = config.tag_name
+
+    echo "-= Attempting to Run Docker Image ${name_of_image} =-"
+    bat "docker run ${name_of_image}:${tag_of_image}"
+}
+
+
 
 pipeline{
 
@@ -8,40 +43,48 @@ pipeline{
     stages{
         stage("CheckOut"){
             steps{
-                dir("app-1"){
+                dir("application-hello"){
                     script{
-
-                        bat "git clone https://github.com/dimiturmomchev/nex-test.git"
-                        echo "checkout"
-
-                    }
-                }
-            }
-        }
-        stage("Test"){
-            steps{
-                dir("app-1"){
-                    script{
-                        echo "Test"
+                        deleteDir()
+                        git_clone(repo_url: "https://github.com/dimiturmomchev/nex-test.git")
                     }
                 }
             }
         }
         stage("Build"){
             steps{
+                dir("application-hello"){
+                    script{
+                        docker_build(
+                            build_dir: "nex-test",
+                            image_name: "docker-hello-world",
+                            tag_name: "latest"
+                        )
+                    }
+                }
+            }
+        }
+        stage('Testing - Stage') {
+            steps{
+                script { parallel(createStages()) }
+            }
+        }
+        stage("Run"){
+            steps{
                 dir("app-1"){
                     script{
-                        bat """cd nex-test && docker build --tag "docker-hello-world:latest" . """
+                        docker_run(
+                            image_name: "docker-hello-world",
+                            tag_name: "latest"
+                        )
                     }
                 }
             }
         }
         stage("DeleteDir"){
             steps{
-                dir("app-1"){
-                    script{
-                        deleteDir()
-                    }
+                script{
+                    deleteDir()
                 }
             }
         }
