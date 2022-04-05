@@ -60,11 +60,32 @@ def docker_run(Map config){
     }
 }
 
+def send_email (Map config){
+    def name = config.recepient
+    def context = config.message
+    try{
+        echo "Sending email to ${name}. ${context}"
+    }catch(error){
+        currentBuild.result = "UNSTABLE"
+        println "Function 'send_email' Broke for some reason."
+        println "ERROR: ${error}"
+    }
+}
+
 
 
 pipeline{
 
     agent any
+
+    options {
+        timeout(time: 12, unit: 'HOURS') 
+    }
+
+    parameters {
+        string(name: 'IMAGE_NAME', defaultValue: 'docker-hello-world', description: 'Write Docker image Name')
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Write Docker image Tag name')
+    }
 
     stages{
         stage("CheckOut"){
@@ -83,8 +104,8 @@ pipeline{
                     script{
                         docker_build(
                             build_dir: "nex-test",
-                            image_name: "docker-hello-world",
-                            tag_name: "latest"
+                            image_name: "${params.IMAGE_NAME}",
+                            tag_name: "${params.IMAGE_TAG}"
                         )
                     }
                 }
@@ -100,8 +121,8 @@ pipeline{
                 dir("app-1"){
                     script{
                         docker_run(
-                            image_name: "docker-hello-world",
-                            tag_name: "latest"
+                            image_name: "${params.IMAGE_NAME}",
+                            tag_name: "${params.IMAGE_TAG}"
                         )
                     }
                 }
@@ -114,6 +135,22 @@ pipeline{
                 }
             }
         }
+    }
+
+    post{
+        failure{
+            send_email(
+                recepient: "dimitar",
+                message: "Failed build "
+            )
+        }
+        success{
+            send_email(
+                recepient: "dimitar",
+                message: "Successfull build "
+            )
+        }
+
     }
 
 }
