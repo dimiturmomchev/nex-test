@@ -14,7 +14,16 @@ def git_clone (Map config){
     def repository = config.repo_url
 
     echo "-= Attempting to checkout ${repository}=-"
-    bat "git clone ${repository}"
+
+    def cmd = """git clone ${repository}"""
+    if(isUnix()){
+        echo "CURRENT SYSTEM IS LINUX"
+        ls """${cmd}"""
+    }else{
+        echo "CURRENT SYSTEM IS WINDOWS"
+        bat """${cmd}"""
+    }
+
 }
 
 def docker_build(Map config){
@@ -23,7 +32,16 @@ def docker_build(Map config){
     def dir = config.build_dir
 
     echo "-= Attempting to Build Docker Image ${name_of_image} =-"
-    bat """cd ${dir} && docker build --tag "${name_of_image}:${tag_of_image}" . """
+    
+    def cmd = """cd ${dir} && docker build --tag "${name_of_image}:${tag_of_image}" . """
+    if(isUnix()){
+        ls """${cmd}"""
+        echo "CURRENT SYSTEM IS LINUX"
+    }else{
+        echo "CURRENT SYSTEM IS WINDOWS"
+        bat """${cmd}"""
+    }
+    
 }
 
 def docker_run(Map config){
@@ -31,7 +49,15 @@ def docker_run(Map config){
     def tag_of_image = config.tag_name
 
     echo "-= Attempting to Run Docker Image ${name_of_image} =-"
-    bat "docker run ${name_of_image}:${tag_of_image}"
+
+    def cmd = """docker run ${name_of_image}:${tag_of_image}"""
+    if(isUnix()){
+        echo "CURRENT SYSTEM IS LINUX"
+        ls """${cmd}"""
+    }else{
+        echo "CURRENT SYSTEM IS WINDOWS"
+        bat """${cmd}"""
+    }
 }
 
 
@@ -67,7 +93,7 @@ pipeline{
         stage('Testing - Stage') {
             steps{
                 script { parallel(createStages()) }
-            }
+                }
         }
         stage("Run"){
             steps{
