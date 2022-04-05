@@ -1,0 +1,37 @@
+pipeline{
+
+    agent any
+
+    stages{
+        stage("CheckOut"){
+            steps{
+                dir("app-1"){
+                    script{
+
+                        echo "checkOut"
+
+                    }
+                }
+            }
+        }
+        stage("Test"){
+            steps{
+                dir("app-1"){
+                    script{
+                        echo "Test"
+                    }
+                }
+            }
+        }
+        stage("Build"){
+            steps{
+                dir("app-1"){
+                    script{
+                        echo "Build"
+                    }
+                }
+            }
+        }
+    }
+
+}
