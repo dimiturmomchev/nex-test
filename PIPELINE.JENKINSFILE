@@ -74,6 +74,8 @@ def send_email (Map config){
 
 
 
+
+
 pipeline{
 
     agent any
@@ -124,6 +126,25 @@ pipeline{
                             image_name: "${params.IMAGE_NAME}",
                             tag_name: "${params.IMAGE_TAG}"
                         )
+                    }
+                }
+            }
+        }
+        stage("Docker Compose"){
+            steps{
+                dir("app-1"){
+                    script{
+                        
+                        echo "-= Attempting to Run Docker Compose =-"
+
+                        def cmd = """docker compose up"""
+                        if(isUnix()){
+                            echo "CURRENT SYSTEM IS LINUX"
+                            ls """${cmd}"""
+                        }else{
+                            echo "CURRENT SYSTEM IS WINDOWS"
+                            bat """${cmd}"""
+                        }
                     }
                 }
             }
