@@ -120,7 +120,7 @@ pipeline{
         }
         stage("Run"){
             steps{
-                dir("app-1"){
+                dir("application-hello"){
                     script{
                         docker_run(
                             image_name: "${params.IMAGE_NAME}",
@@ -132,19 +132,21 @@ pipeline{
         }
         stage("Docker Compose"){
             steps{
-                dir("app-1"){
+                dir("nex-test"){
                     script{
                         
                         echo "-= Attempting to Run Docker Compose =-"
-
-                        def cmd = """docker compose up"""
-                        if(isUnix()){
-                            echo "CURRENT SYSTEM IS LINUX"
-                            ls """${cmd}"""
-                        }else{
-                            echo "CURRENT SYSTEM IS WINDOWS"
-                            bat """${cmd}"""
-                        }
+                        // bat "cd ./nex-test"
+                        bat "dir"
+                        bat "docker compose up"
+                        // def cmd = """docker compose up"""
+                        // if(isUnix()){
+                        //     echo "CURRENT SYSTEM IS LINUX"
+                        //     ls """${cmd}"""
+                        // }else{
+                        //     echo "CURRENT SYSTEM IS WINDOWS"
+                        //     bat """${cmd}"""
+                        // }
                     }
                 }
             }
@@ -152,6 +154,7 @@ pipeline{
         stage("DeleteDir"){
             steps{
                 script{
+                    echo "DeleteDir"
                     deleteDir()
                 }
             }
