@@ -1,3 +1,6 @@
+
+
+
 pipeline{
 
     agent any
@@ -8,7 +11,8 @@ pipeline{
                 dir("app-1"){
                     script{
 
-                        echo "checkOut"
+                        bat "git clone https://github.com/dimiturmomchev/nex-test.git"
+                        echo "checkout"
 
                     }
                 }
@@ -27,7 +31,16 @@ pipeline{
             steps{
                 dir("app-1"){
                     script{
-                        echo "Build"
+                        bat """cd nex-test && docker build --tag "docker-hello-world:latest" . """
+                    }
+                }
+            }
+        }
+        stage("DeleteDir"){
+            steps{
+                dir("app-1"){
+                    script{
+                        deleteDir()
                     }
                 }
             }
